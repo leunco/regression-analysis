@@ -1,0 +1,578 @@
+---
+title: "Untitled"
+author: "s"
+date: '2020 12 21 '
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+1. 데이터 불러오기
+```{r,comment=""}
+# 2019년
+data1 <- read.csv("C:/Users/dldms/OneDrive/바탕 화면/회귀진단 레포트/Data/2019.csv")
+str(data1)
+
+# 2018년
+data2 <- read.csv("C:/Users/dldms/OneDrive/바탕 화면/회귀진단 레포트/Data/2018.csv",header=T)
+str(data2)
+data2$Perceptions.of.corruption[20] <- 0.112 # 결측치를 평균으로 대체
+data2$Perceptions.of.corruption <- as.numeric(data2$Perceptions.of.corruption)
+
+# 2017년
+data3 <- read.csv("C:/Users/dldms/OneDrive/바탕 화면/회귀진단 레포트/Data/2017.csv",header=T)
+str(data3)
+
+data1 <- cbind(data1,year=rep(0,156)) # 2019
+data2 <- cbind(data2,year=rep(1,156)) # 2018
+data3 <- cbind(data3,year=rep(2,155)) # 2017
+
+# 2017, 2018, 2019년 합친 데이터
+y <- c(data1$Score,data2$Score,data3$Happiness.Score)
+gdp <- c(data1$GDP.per.capita,data2$GDP.per.capita,data3$Economy..GDP.per.Capita.)
+support <- c(data1$Social.support,data2$Social.support,data3$Family)
+life <- c(data1$Healthy.life.expectancy,data2$Healthy.life.expectancy,data3$Health..Life.Expectancy.)
+freedom <- c(data1$Freedom.to.make.life.choices,data2$Freedom.to.make.life.choices,data3$Freedom)
+generosity <- c(data1$Generosity,data2$Generosity,data3$Generosity)
+corruption <- c(data1$Perceptions.of.corruption,data2$Perceptions.of.corruption,data3$Trust..Government.Corruption.)
+
+year <- c(data1$year,data2$year,data3$year)
+year <- as.factor(year)
+
+data <- data.frame(y,gdp,support,life,freedom,generosity,corruption,year)
+
+# 2017년
+y3 <- data3$Happiness.Score
+gdp3 <- data3$Economy..GDP.per.Capita.
+support3 <- data3$Family
+life3 <- data3$Health..Life.Expectancy.
+freedom3 <- data3$Freedom
+generosity3 <- data3$Generosity
+corruption3 <- data3$Trust..Government.Corruption.
+region3 <- data3$Country
+rank3 <- data3$Happiness.Rank
+
+# 2018년
+y2 <- data2$Score
+gdp2 <- data2$GDP.per.capita
+support2 <- data2$Social.support
+life2 <- data2$Healthy.life.expectancy
+freedom2 <- data2$Freedom.to.make.life.choices
+generosity2 <- data2$Generosity
+corruption2 <- data2$Perceptions.of.corruption
+region2 <- data2$Country.or.region
+rank2 <- data2$Overall.rank
+
+# 2019년
+y1 <- data1$Score
+gdp1 <- data1$GDP.per.capita
+support1 <- data1$Social.support
+life1 <- data1$Healthy.life.expectancy
+freedom1 <- data1$Freedom.to.make.life.choices
+generosity1 <- data1$Generosity
+corruption1 <- data1$Perceptions.of.corruption
+region1 <- data1$Country.or.region
+rank1 <- data1$Overall.rank
+```
+
+2. 요약통계량
+```{r,comment=""}
+# 2017년
+mean(y3);quantile(y3)
+mean(gdp3);quantile(gdp3)
+mean(support3);quantile(gdp3)
+mean(life3);quantile(life3)
+mean(freedom3);quantile(freedom3)
+mean(generosity3);quantile(generosity3)
+mean(corruption3);quantile(corruption3)
+
+# 2018년
+mean(y2);quantile(y2)
+mean(gdp2);quantile(gdp2)
+mean(support2);quantile(support2)
+mean(life2);quantile(life2)
+mean(freedom2);quantile(freedom2)
+mean(generosity2);quantile(generosity2)
+mean(corruption2);quantile(corruption2)
+
+# 2018년
+mean(y1);quantile(y1)
+mean(gdp1);quantile(gdp1)
+mean(support1);quantile(gdp1)
+mean(life1);quantile(life1)
+mean(freedom1);quantile(freedom1)
+mean(generosity1);quantile(generosity1)
+mean(corruption1);quantile(corruption1)
+```
+
+3. 변수 그림(히스토그램)
+```{r,comment=""}
+## 2017년 데이터 히스토그램
+
+hist(y3,xlab="Score",main="Happiness Score")
+
+hist(gdp3,xlab="GDP",main="GDP")
+hist(data3$Family,xlab="Social support",main="Social support")
+hist(life3,xlab="Healthy life expectancy",main="Healthy life expectancy")
+hist(freedom3,xlab="Freedom to make life chocies",main="Freedom to make life chocies")
+hist(generosity3,xlab="Generosity",main="Generosity")
+hist(corruption3,xlab="Perceptions of corruption",main="Perceptions of corruption")
+
+# 로그 변환
+generosity3_log <- log(generosity3)
+generosity3_log[is.infinite(generosity3_log)] <- 0
+corruption3_log <- log(corruption3)
+corruption3_log[is.infinite(corruption3_log)] <- 0
+
+hist(generosity3,xlab="Generosity",main="Generosity")
+hist(generosity3_log,xlab="log Generosity",main="Generosity")
+
+hist(corruption3,xlab="Perceptions of corruption",main="Perceptions of corruption")
+hist(corruption3_log,xlab="log Perceptions of corruption",main="Perceptions of corruption")
+
+## 2018년 데이터 히스토그램
+hist(y2,xlab="Score",main="Happiness Score")
+hist(gdp2,xlab="GDP",main="GDP")
+hist(support2,xlab="Social support",main="Social support")
+hist(life2,xlab="Healthy life expectancy",main="Healthy life expectancy")
+hist(freedom2,xlab="Freedom to make life chocies",main="Freedom to make life chocies")
+hist(generosity2,xlab="Generosity",main="Generosity")
+hist(corruption2,xlab="Perceptions of corruption",main="Perceptions of corruption")
+
+# 로그 변환
+generosity2_log <- log(generosity2)
+generosity2_log[is.infinite(generosity2_log)] <- 0
+corruption2_log <- log(corruption2)
+corruption2_log[is.infinite(corruption2_log)] <- 0
+
+hist(generosity2,xlab="Generosity",main="Generosity")
+hist(generosity2_log,xlab="log Generosity",main="Generosity")
+
+hist(corruption2,xlab="Perceptions of corruption",main="Perceptions of corruption")
+hist(corruption2_log,xlab="log Perceptions of corruption",main="Perceptions of corruption")
+
+## 2019년 데이터 히스토그램
+hist(y1,xlab="Score",main="Happiness Score")
+hist(gdp1,xlab="GDP",main="GDP")
+hist(support1,xlab="Social support",main="Social support")
+hist(life1,xlab="Healthy life expectancy",main="Healthy life expectancy")
+hist(freedom1,xlab="Freedom to make life choices",main="Freedom to make life choices")
+hist(generosity1,xlab="Generosity",main="Generosity")
+hist(corruption1,xlab="Perceptions of corruption",main="Perceptions of corruption")
+
+# 로그 변환
+generosity1_log <- log(generosity1)
+generosity1_log[is.infinite(generosity1_log)] <- 0
+corruption1_log <- log(corruption1)
+corruption1_log[is.infinite(corruption1_log)] <- 0
+
+hist(generosity1,xlab="Generosity",main="Generosity")
+hist(generosity1_log,xlab="log Generosity",main="Generosity")
+
+hist(corruption1,xlab="Perceptions of corruption",main="Perceptions of corruption")
+hist(corruption1_log,xlab="log Perceptions of corruption",main="Perceptions of corruption")
+
+## 2017, 2018, 2019년 합친 데이터 히스토그램
+hist(y,xlab="Score",main="Happiness Score")
+hist(gdp,xlab="GDP",main="GDP")
+hist(support,xlab="Social support",main="Social support")
+hist(life,xlab="Healthy life expectancy",main="Healthy life expectancy")
+hist(freedom,xlab="Freedom to make life choices",main="Freedom to make life choices")
+hist(generosity,xlab="Generosity",main="Generosity")
+hist(corruption,xlab="Perceptions of corruption",main="Perceptions of corruption")
+
+# 로그 변환
+generosity_log <- log(generosity)
+generosity_log[is.infinite(generosity_log)] <- 0
+corruption_log <- log(corruption)
+corruption_log[is.infinite(corruption_log)] <- 0
+
+hist(generosity,xlab="Generosity",main="Generosity")
+hist(generosity_log,xlab="log Generosity",main="Generosity")
+
+hist(corruption,xlab="Perceptions of corruption",main="Perceptions of corruption")
+hist(corruption_log,xlab="log Perceptions of corruption",main="Perceptions of corruption")
+
+```
+
+4. 모형 선택
+```{r,comment=""}
+fit1 <- lm(y~gdp+support+life+freedom+generosity+corruption+year) # 모형 1
+fit2 <- lm(y~gdp+support+life+freedom+generosity+corruption_log+year) # 모형 2
+fit3 <- lm(y~gdp+support+life+freedom+generosity_log+corruption+year) # 모형 3
+fit4 <- lm(y~gdp+support+life+freedom+generosity_log+corruption_log+year) # 모형 4
+
+car::vif(fit1) # 다중공선성 판단
+summary(fit1)
+
+car::vif(fit2) # 다중공선성 판단
+summary(fit2)
+
+car::vif(fit3) # 다중공선성 판단
+summary(fit3)
+
+car::vif(fit4) # 다중공선성 판단
+summary(fit4)
+
+# 모형 진단
+plot(fit1)
+plot(fit2)
+plot(fit3)
+plot(fit4)
+
+```
+
+5. 특이값, 영향력이 큰 관측값 판단
+```{r,comment=""}
+# 독립변수 기준으로 특이값
+hatvalues(fit4)[2*mean(hatvalues(fit4))]
+
+# 종속변수 기준으로 특이값
+rstudent(fit4)[rstudent(fit4)>qt(0.05/2,467-7-2,lower.tail=FALSE)]
+
+# 영향력이 큰 관측값
+cooks.distance(fit4)[cooks.distance(fit4)>qf(0.5,7+1,467-7-1,lower.tail=FALSE)]
+```
+
+6. 변수 선택 : 단계별 회귀 방법
+```{r,comment=""}
+# 번수 선택 : 단계별 회귀방법
+fit_null <- lm(y~1)
+step(fit_null,scope=list(lower=~1,upper=~gdp+support+life+freedom+generosity_log+corruption_log),direction="both")
+```
+
+7. 2017년 변수별 상위 10개 국가(지역)
+```{r,comment=""}
+# 2017년
+gdp3_sort <- sort(gdp3,decreasing = TRUE)[1:10]
+gdp3_region <- c()
+
+for(i in 1:10){
+  for(j in 1:155){
+  if(gdp3_sort[i]==gdp3[j]){
+      gdp3_region <- c(gdp3_region,region3[j])
+    }
+  }
+}
+
+support3_sort <- sort(support3,decreasing = TRUE)[1:10]
+support3_region <- c()
+
+for(i in 1:10){
+  for(j in 1:155){
+  if(support3_sort[i]==support3[j]){
+      support3_region <- c(support3_region,region3[j])
+    }
+  }
+}
+
+life3_sort <- sort(life3,decreasing = TRUE)[1:10]
+life3_region <- c()
+
+for(i in 1:10){ 
+  for(j in 1:155){
+  if(life3_sort[i]==life3[j]){
+      life3_region <- c(life3_region,region3[j])
+    }
+  }
+}
+
+freedom3_sort <- sort(freedom3,decreasing = TRUE)[1:10]
+freedom3_region <- c()
+
+for(i in 1:10){
+  for(j in 1:155){
+  if(freedom3_sort[i]==freedom3[j]){
+      freedom3_region <- c(freedom3_region,region3[j])
+    }
+  }
+}
+
+generosity3_sort <- sort(generosity3,decreasing = TRUE)[1:10]
+generosity3_region <- c()
+
+for(i in 1:10){
+  for(j in 1:155){
+  if(generosity3_sort[i]==generosity3[j]){
+      generosity3_region <- c(generosity3_region,region3[j])
+    }
+  }
+}
+
+corruption3_sort <- sort(corruption3,decreasing = TRUE)[1:10]
+corruption3_region <- c()
+
+for(i in 1:10){
+  for(j in 1:155){
+  if(corruption3_sort[i]==corruption3[j]){
+      corruption3_region <- c(corruption3_region,region3[j])
+    }
+  }
+}
+
+cbind(gdp3_region,support3_region,life3_region,freedom3_region,generosity3_region,corruption3_region,region3[1:10])
+```
+
+8. 2018년 변수별 상위 10개 국가(지역)
+```{r,comment=""}
+# 2018년
+gdp2_sort <- sort(gdp2,decreasing = TRUE)[1:10]
+gdp2_region <- c()
+
+for(i in 1:10){
+  for(j in 1:156){
+  if(gdp2_sort[i]==gdp2[j]){
+      gdp2_region <- c(gdp2_region,region2[j])
+    }
+  }
+}
+
+support2_sort <- sort(support2,decreasing = TRUE)[1:10]
+support2_region <- c()
+
+for(i in c(1:10)){
+  for(j in 1:156){
+  if(support2_sort[i]==support2[j]){
+      support2_region <- c(support2_region,region2[j])
+    }
+  }
+}
+
+life2_sort <- sort(life2,decreasing = TRUE)[1:10]
+life2_region <- c()
+
+for(i in 1:10){ 
+  for(j in 1:156){
+  if(life2_sort[i]==life2[j]){
+      life2_region <- c(life2_region,region2[j])
+    }
+  }
+}
+
+freedom2_sort <- sort(freedom2,decreasing = TRUE)[1:10]
+freedom2_region <- c()
+
+for(i in 1:10){
+  for(j in 1:156){
+  if(freedom2_sort[i]==freedom2[j]){
+      freedom2_region <- c(freedom2_region,region2[j])
+    }
+  }
+}
+
+generosity2_sort <- sort(generosity2,decreasing = TRUE)[1:10]
+generosity2_region <- c()
+
+for(i in c(1,2,3,4,6,7,9,10)){ # 중복 제외
+  for(j in 1:156){
+  if(generosity2_sort[i]==generosity2[j]){
+      generosity2_region <- c(generosity2_region,region2[j])
+    }
+  }
+}
+
+corruption2_sort <- sort(corruption2,decreasing = TRUE)[1:10]
+corruption2_region <- c()
+
+for(i in 1:10){
+  for(j in 1:156){
+  if(corruption2_sort[i]==corruption2[j]){
+      corruption2_region <- c(corruption2_region,region2[j])
+    }
+  }
+}
+
+cbind(gdp2_region,support2_region,life2_region,freedom2_region,generosity2_region,corruption2_region,region2[1:10])
+
+```
+
+9. 2019년 변수별 상위 10개 국가(지역)
+```{r,comment=""}
+# 2019년
+gdp1_sort <- sort(gdp1,decreasing = TRUE)[1:10]
+gdp1_region <- c()
+
+for(i in 1:10){
+  for(j in 1:156){
+  if(gdp1_sort[i]==gdp1[j]){
+      gdp1_region <- c(gdp1_region,region1[j])
+    }
+  }
+}
+
+support1_sort <- sort(support1,decreasing = TRUE)[1:10]
+support1_region <- c()
+
+for(i in c(1:8,10)){ # 중복 제외
+  for(j in 1:156){
+  if(support1_sort[i]==support1[j]){
+      support1_region <- c(support1_region,region1[j])
+    }
+  }
+}
+
+life1_sort <- sort(life1,decreasing = TRUE)[1:10]
+life1_region <- c()
+
+for(i in c(1:7,9)){ # 중복 제외
+  for(j in 1:156){
+  if(life1_sort[i]==life1[j]){
+      life1_region <- c(life1_region,region1[j])
+    }
+  }
+}
+
+freedom1_sort <- sort(freedom1,decreasing = TRUE)[1:10]
+freedom1_region <- c()
+
+for(i in 1:10){
+  for(j in 1:156){
+  if(freedom1_sort[i]==freedom1[j]){
+      freedom1_region <- c(freedom1_region,region1[j])
+    }
+  }
+}
+
+generosity1_sort <- sort(generosity1,decreasing = TRUE)[1:10]
+generosity1_region <- c()
+
+for(i in 1:10){
+  for(j in 1:156){
+  if(generosity1_sort[i]==generosity1[j]){
+      generosity1_region <- c(generosity1_region,region1[j])
+    }
+  }
+}
+
+corruption1_sort <- sort(corruption1,decreasing = TRUE)[1:10]
+corruption1_region <- c()
+
+for(i in 1:10){
+  for(j in 1:156){
+  if(corruption1_sort[i]==corruption1[j]){
+      corruption1_region <- c(corruption1_region,region1[j])
+    }
+  }
+}
+
+cbind(gdp1_region,support1_region,life1_region,freedom1_region,generosity1_region,corruption1_region,region1[1:10])
+```
+
+10. 연도별 행복점수(y)와 독립변수 간에 상관관계 파악
+```{r,comment=""}
+## 2019년
+cor.test(y1,gdp1)
+cor.test(y1,support1)
+cor.test(y1,life1)
+cor.test(y1,freedom1)
+cor.test(y1,generosity1)
+cor.test(y1,corruption1)
+
+data1_part_log <- data.frame(y1,gdp1,support1,life1,freedom1,generosity1_log,corruption1_log)
+head(data1_part_log)
+
+library(corrplot)
+cor1_log <- cor(data1_part_log)
+round(cor1_log,3)
+corrplot(cor1_log) # 상관행렬 히트맵
+
+## 2018년
+cor.test(y2,gdp2)
+cor.test(y2,support2)
+cor.test(y2,life2)
+cor.test(y2,freedom2)
+cor.test(y2,generosity2)
+cor.test(y2,corruption2)
+
+data2_part_log <- data.frame(y2,gdp2,support2,life2,freedom2,generosity2_log,corruption2_log)
+head(data2_part_log)
+
+cor2_log <- cor(data2_part_log)
+round(cor2_log,3)
+corrplot(cor2_log) # 상관행렬 히트맵
+
+## 2017년
+cor.test(y3,gdp3)
+cor.test(y3,support3)
+cor.test(y3,life3)
+cor.test(y3,freedom3)
+cor.test(y3,generosity3)
+cor.test(y3,corruption3)
+
+data3_part_log <- data.frame(y3,gdp3,support3,life3,freedom3,generosity3_log,corruption3_log)
+head(data3_part_log)
+
+cor3_log <- cor(data3_part_log)
+round(cor3_log,3)
+corrplot(cor3_log) # 상관행렬 히트맵
+
+```
+
+11. 2017년 변수별로 한국이 차지한 순위
+```{r,comment=""}
+# 2017년
+k3 <- rank3[region3=="South Korea"]
+rank(-gdp3)[k3]
+rank(-support3)[k3]
+rank(-life3)[k3]
+rank(-freedom3)[k3]
+rank(-generosity3)[k3]
+rank(-corruption3)[k3]
+
+cbind(k3,gdp3=rank(-gdp3)[k3],support3=rank(-support3)[k3],life3=rank(-life3)[k3],freedom3=rank(-freedom3)[k3],generosity3=rank(-generosity3)[k3],corruption3=rank(-corruption3)[k3])
+```
+
+12. 2018년 변수별로 한국이 차지한 순위
+```{r,comment=""}
+# 2018년
+k2 <- rank2[region2=="South Korea"]
+rank(-gdp2)[k2]
+rank(-support2)[k2]
+rank(-life2)[k2]
+rank(-freedom2)[k2]
+rank(-generosity2)[k2]
+rank(-corruption2)[k2]
+
+cbind(k2,gdp2=rank(-gdp2)[k2],support2=rank(-support2)[k2],life2=rank(-life2)[k2],freedom2=rank(-freedom2)[k2],generosity2=rank(-generosity2)[k2],corruption2=rank(-corruption2)[k2])
+```
+
+13. 2019년 변수별로 한국이 차지한 순위
+```{r,comment=""}
+# 2019년
+k1 <- rank1[region1=="South Korea"]
+rank(-gdp1)[k1]
+rank(-support1)[k1]
+rank(-life1)[k1]
+rank(-freedom1)[k1]
+rank(-generosity1)[k1]
+rank(-corruption1)[k1]
+
+cbind(k1,gdp1=rank(-gdp1)[k1],support1=rank(-support1)[k1],life1=rank(-life1)[k1],freedom1=rank(-freedom1)[k1],generosity1=rank(-generosity1)[k1],corruption1=rank(-corruption1)[k1])
+```
+
+14. 2017, 2018, 2019년 변수별로 한국이 차지한 순위를 합친 데이터에서 행복 점수(y)와 변수별로 상관관계 비교 
+```{r,comment=""}
+y_korea <- c(y1[k1],y2[k2],y3[k3])
+gdp_korea <- c(gdp1[k1],gdp2[k2],gdp3[k3])
+support_korea <- c(support1[k1],support2[k2],support3[k3])
+life_korea <- c(life1[k1],life2[k2],life3[k3])
+freedom_korea <- c(freedom1[k1],freedom2[k2],freedom3[k3])
+generosity_korea <- c(generosity1[k1],generosity2[k2],generosity3[k3])
+corruption_korea <- c(corruption1[k1],corruption2[k2],corruption3[k3])
+
+data_korea <- data.frame(y_korea,gdp_korea,support_korea,life_korea,freedom_korea,generosity_korea,corruption_korea)
+
+# 상관게수
+cor(y_korea,gdp_korea)
+cor(y_korea,support_korea)
+cor(y_korea,life_korea)
+cor(y_korea,freedom_korea)
+cor(y_korea,generosity_korea)
+cor(y_korea,corruption_korea)
+
+round(cor(data_korea),3)
+corrplot(round(cor(data_korea),3)) # 상관행렬 비트맵
+
+```
